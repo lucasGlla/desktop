@@ -124,7 +124,7 @@ $paginas = ceil($totalRegistros / $limite);
                             <td><?php echo htmlspecialchars($user_data['nivel_acesso'], ENT_QUOTES, 'UTF-8'); ?></td>
                             <td><?php echo htmlspecialchars($user_data['chamados'], ENT_QUOTES, 'UTF-8'); ?></td>
                             <td>
-                                <?php if ($nivel_acesso == 'administrador_geral'): ?>
+                                <?php if ($nivel_acesso == 'administrador'): ?>
                                     <?php if ($user_data['id'] != $logged_in_user_id): ?>
                                         <a href='./controller/userController.php?id=<?= $user_data['id'] ?>'>atualizar</a>
                                         <a href='./controller/userDelete.php?id=<?= $user_data['id'] ?>'>deletar</a>

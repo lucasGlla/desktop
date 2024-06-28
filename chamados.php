@@ -8,6 +8,13 @@ if (!isset($_SESSION['email']) || !isset($_SESSION['senha'])) {
     exit;
 }
 
+$stmt = $conexao->prepare("SELECT id, nivel_acesso FROM usuario WHERE email = ?");
+$stmt->bind_param('s', $_SESSION['email']);
+$stmt->execute();
+$result = $stmt->get_result();
+$user = $result->fetch_assoc();
+$nivel_acesso = $user['nivel_acesso'];
+
 // Gera e verifica o token CSRF
 if (!isset($_SESSION['csrf_token'])) {
     $_SESSION['csrf_token'] = bin2hex(random_bytes(32));

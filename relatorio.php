@@ -144,7 +144,7 @@ $paginas = ceil($totalRegistros / $limite);
 </head>
 <body>
     <?php include('./view/navbar.php'); ?>
-    
+
     <main>
     <div id="filter" align='center'>
         <form id="filterForm">
@@ -221,7 +221,7 @@ $paginas = ceil($totalRegistros / $limite);
                             <td><?= $user_data['data_entrega'] ?></td>
                         <?php endif; ?>
                         <td>
-                        <?php if ($nivel_acesso == 'administrador_geral' || $nivel_acesso == 'administrador'): ?>
+                        <?php if ($nivel_acesso == 'administrador' || $nivel_acesso == 'gestor'): ?>
                             <a href="./controller/updateController.php?id=<?= $user_data['id'] ?>">atualizar</a>
                             <a href="./controller/deleteController.php?id=<?= $user_data['id'] ?>">deletar</a>
                             <?php else:?>

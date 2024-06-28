@@ -5,7 +5,7 @@
 
             <p id="user_infos">
                 <?php echo "<span class='item-description'> $logado</span>"; ?>
-                <span class="item-description">Admin</span>
+                <span class="item-description"><?php echo $nivel_acesso;?></span>
             </p>
             </div>
         

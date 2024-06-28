@@ -65,11 +65,11 @@ if(!empty($_GET['id'])){
             <br><br>
             <p>Nivel de acesso:</p>
                     <label>
-                        <input type="radio" id="administrador_geral" name="nivel_acesso" value="administrador_geral" <?php echo ($nivel_acesso == 'administrador_geral') ? 'checked' : '' ?>required> Administrador geral
+                        <input type="radio" id="administrador" name="nivel_acesso" value="administrador" <?php echo ($nivel_acesso == 'administrador') ? 'checked' : '' ?>required> Administrador
                     </label>
                     <br>
                     <label>
-                        <input type="radio" id="administrador" name="nivel_acesso" value="administrador"<?php echo ($nivel_acesso == 'administrador') ? 'checked' : '' ?> required> Administrador
+                        <input type="radio" id="gestor" name="nivel_acesso" value="gestor"<?php echo ($nivel_acesso == 'gestor') ? 'checked' : '' ?> required> Gestor
                     </label>
                     <br>
                     <label>

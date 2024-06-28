@@ -8,6 +8,13 @@
     }
     $logado = $_SESSION['email'];
 
+    $stmt = $conexao->prepare("SELECT id, nivel_acesso FROM usuario WHERE email = ?");
+    $stmt->bind_param('s', $_SESSION['email']);
+    $stmt->execute();
+    $result = $stmt->get_result();
+    $user = $result->fetch_assoc();
+    $nivel_acesso = $user['nivel_acesso'];
+
     $sql_total_tickets = "SELECT COUNT(*) AS total_tickets FROM tickets";
     $result_total_tickets = $conexao->query($sql_total_tickets);
     $row_total_tickets = mysqli_fetch_assoc($result_total_tickets);
