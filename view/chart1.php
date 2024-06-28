@@ -27,8 +27,13 @@ const ctxAno = document.getElementById('myChartAno');
                 borderColor: 'rgb(41, 155,99)',
                 backgroundColor: 'rgba(155, 255, 155, 1)',
                 borderWidth: 1
-            },
-            {
+            },{
+                label: 'concluidos',
+                data: <?php echo json_encode($concluidosAno); ?>,
+                borderColor: 'rgba(255, 206, 86, 1)',
+                backgroundColor: 'rgba(55, 55, 255, 1)',
+                borderWidth: 1
+            },{
                 label: 'Atrasados',
                 data: <?php echo json_encode($atrasadosAno); ?>,
                 borderColor: 'rgba(255, 206, 86, 1)',

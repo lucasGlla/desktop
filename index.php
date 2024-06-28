@@ -20,11 +20,15 @@
     $abertos = 0;
     $fechados = 0;
     $atrasados = 0;
+    $concluidos = 0;
 
     while($user_data = mysqli_fetch_assoc($result)){
         if($user_data['estado'] == 'aberto'){
             $abertos++;
-        } else{
+        }elseif($user_data['estado'] == 'concluido'){
+            $concluidos++;
+        }
+         else{
             $fechados++;
         }
 
@@ -36,6 +40,7 @@
     $sqlAno = "SELECT YEAR(data_criacao) AS ano,
         SUM(CASE WHEN estado = 'aberto' THEN 1 ELSE 0 END) AS abertos,
         SUM(CASE WHEN estado = 'fechado' THEN 1 ELSE 0 END) AS fechados,
+        SUM(CASE WHEN estado = 'concluido' THEN 1 ELSE 0 END) AS concluidos,
         SUM(CASE WHEN estado = 'aberto' AND data_entrega < CURDATE() THEN 1 ELSE 0 END) AS atrasados
         FROM tickets 
         GROUP BY YEAR(data_criacao)
@@ -46,12 +51,14 @@
     $labelsAno = [];
     $abertosAno = [];
     $fechadosAno = [];
+    $concluidosAno = [];
     $atrasadosAno = [];
 
     while($row = mysqli_fetch_assoc($resultAno)){
     $labelsAno[] = $row['ano'];
     $abertosAno[] = $row['abertos'];
     $fechadosAno[] = $row['fechados'];
+    $concluidosAno[] = $row['concluidos'];
     $atrasadosAno[] = $row['atrasados'];
     }
 
@@ -61,6 +68,7 @@
     $sqlMes = "SELECT DATE_FORMAT(data_criacao, '%Y-%m') AS mes,
             SUM(CASE WHEN estado = 'aberto' THEN 1 ELSE 0 END) AS abertos,
             SUM(CASE WHEN estado = 'fechado' THEN 1 ELSE 0 END) AS fechados,
+            SUM(CASE WHEN estado = 'concluido' THEN 1 ELSE 0 END) AS concluidos,
             SUM(CASE WHEN estado = 'aberto' AND data_entrega < CURDATE() THEN 1 ELSE 0 END) AS atrasados
             FROM tickets 
             WHERE YEAR(data_criacao) = $anoAtual
@@ -72,12 +80,14 @@
     $labelsMes = [];
     $abertosMes = [];
     $fechadosMes = [];
+    $concluidosMes = [];
     $atrasadosMes = [];
 
     while($rowMes = mysqli_fetch_assoc($resultMes)){
         $labelsMes[] = $rowMes['mes'];
         $abertosMes[] = $rowMes['abertos'];
         $fechadosMes[] = $rowMes['fechados'];
+        $concluidosMes[] = $rowMes['concluidos'];
         $atrasadosMes[] = $rowMes['atrasados'];
     }
 
@@ -85,6 +95,7 @@
     WEEK(data_criacao) AS semana,
     SUM(CASE WHEN estado = 'aberto' THEN 1 ELSE 0 END) AS abertos,
     SUM(CASE WHEN estado = 'fechado' THEN 1 ELSE 0 END) AS fechados,
+    SUM(CASE WHEN estado = 'concluido' THEN 1 ELSE 0 END) AS concluidos,
     SUM(CASE WHEN estado = 'aberto' AND data_entrega < CURDATE() THEN 1 ELSE 0 END) AS atrasados
     FROM tickets 
     WHERE YEAR(data_criacao) = $anoAtual AND MONTH(data_criacao) = $mesAtual
@@ -97,11 +108,13 @@
     $abertosSemana = [];
     $fechadosSemana = [];
     $atrasadosSemana = [];
+    $concluidosSemana = [];
 
     while ($row = mysqli_fetch_assoc($resultSemana)) {
         $labelsSemana[] = "Semana " . $row['semana'] . " - " . $row['ano'];
         $abertosSemana[] = $row['abertos'];
         $fechadosSemana[] = $row['fechados'];
+        $concluidosSemana[] = $row['concluidos'];
         $atrasadosSemana[] = $row['atrasados'];
     }
 
@@ -155,6 +168,15 @@
                 </div>
                 <div class="iconBox">
                 <i class="fa-solid fa-clock" aria-hidden="true"></i>
+                </div>
+            </div>
+            <div class="card">
+                <div>
+                    <div class="numbers"><?php echo $concluidos; ?> </div>
+                    <div class="cardName">Chamados concluidos</div>
+                </div>
+                <div class="iconBox">
+                <i class="fa-solid fa-check" aria-hidden="true"></i>
                 </div>
             </div>
         </div>

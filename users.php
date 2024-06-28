@@ -11,10 +11,6 @@ function isLoggedIn() {
     return isset($_SESSION['email']) && isset($_SESSION['senha']);
 }
 
-function isAdmin() {
-    return isset($_SESSION['nivel_acesso']) && $_SESSION['nivel_acesso'] === 'administrador';
-}
-
 if (!isLoggedIn()) {
     unset($_SESSION['email']);
     unset($_SESSION['senha']);
@@ -22,6 +18,15 @@ if (!isLoggedIn()) {
 }
 
 $logado = htmlspecialchars($_SESSION['email'], ENT_QUOTES, 'UTF-8');
+
+// Obter o nível de acesso do usuário logado
+$stmt = $conexao->prepare("SELECT id, nivel_acesso FROM usuario WHERE email = ?");
+$stmt->bind_param('s', $_SESSION['email']);
+$stmt->execute();
+$result = $stmt->get_result();
+$user = $result->fetch_assoc();
+$nivel_acesso = $user['nivel_acesso'];
+$logged_in_user_id = $user['id'];
 
 $pagina = filter_input(INPUT_GET, 'pagina', FILTER_VALIDATE_INT);
 if (!$pagina) {
@@ -64,8 +69,10 @@ if (!$result) {
     die("Erro na execução da consulta: " . $conexao->error);
 }
 
-$registros = "SELECT COUNT(*) as total FROM usuario";
-$resultRegistros = $conexao->query($registros);
+$sqlCount = "SELECT COUNT(*) as total FROM usuario";
+$stmtCount = $conexao->prepare($sqlCount);
+$stmtCount->execute();
+$resultRegistros = $stmtCount->get_result();
 if (!$resultRegistros) {
     die("Erro na contagem de registros: " . $conexao->error);
 }
@@ -86,7 +93,7 @@ $paginas = ceil($totalRegistros / $limite);
     <?php include('./view/navbar.php'); ?>
     <main>
         <div class="box-search">
-            <input type="search" placeholder="Pesquisar" class="search">
+            <input type="search" id="search" placeholder="Pesquisar" class="search">
             <button onclick="searchData()">
                 <i class="fa-solid fa-magnifying-glass"></i>
             </button>
@@ -104,6 +111,7 @@ $paginas = ceil($totalRegistros / $limite);
                         <th>Setor</th>
                         <th>Nível de Acesso</th>
                         <th>Qtd. Chamados</th>
+                        <th>Ações</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -115,6 +123,20 @@ $paginas = ceil($totalRegistros / $limite);
                             <td><?php echo htmlspecialchars($user_data['setor'], ENT_QUOTES, 'UTF-8'); ?></td>
                             <td><?php echo htmlspecialchars($user_data['nivel_acesso'], ENT_QUOTES, 'UTF-8'); ?></td>
                             <td><?php echo htmlspecialchars($user_data['chamados'], ENT_QUOTES, 'UTF-8'); ?></td>
+                            <td>
+                                <?php if ($nivel_acesso == 'administrador_geral'): ?>
+                                    <?php if ($user_data['id'] != $logged_in_user_id): ?>
+                                        <a href='./controller/userController.php?id=<?= $user_data['id'] ?>'>atualizar</a>
+                                        <a href='./controller/userDelete.php?id=<?= $user_data['id'] ?>'>deletar</a>
+                                        <?php else:?>
+                                            <a href="#">atualizar</a>
+                                            <a href="#">deletar</a>
+                                    <?php endif;?>
+                                    <?php else:?>
+                                        <a href="#">atualizar</a>
+                                        <a href="#">deletar</a>
+                                <?php endif; ?>
+                            </td>
                         </tr>
                     <?php endwhile; ?>
                 </tbody>
@@ -138,18 +160,22 @@ $paginas = ceil($totalRegistros / $limite);
     </main>
     <script src="./src/js/script.js"></script>
     <script>
-        let search = document.getElementById('search');
+       document.addEventListener('DOMContentLoaded', function() {
+            let search = document.getElementById('search');
 
-        search.addEventListener("keydown", function(event){
-            if(event.key === "Enter"){
-                searchData();
+            if (search) {
+                search.addEventListener("keydown", function(event) {
+                    if (event.key === "Enter") {
+                        searchData();
+                    }
+                });
             }
-        });
 
-        function searchData(){
-            window.location = 'users.php?search=' + encodeURIComponent(search.value);
-        }
+            function searchData() {
+                window.location = 'users.php?search=' + encodeURIComponent(search.value);
+            }
+    });
+
     </script>
 </body>
 </html>
-

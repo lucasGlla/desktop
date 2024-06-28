@@ -26,6 +26,12 @@
                     borderColor: 'rgb(41, 155,99)',
                     backgroundColor: 'rgba(155, 255, 155, 1)',
                     borderWidth: 1
+                },{
+                    label: 'Concluido',
+                    data: <?php echo json_encode($concluidosSemana); ?>,
+                    borderColor: 'rgb(41, 155,99)',
+                    backgroundColor: 'rgba(55, 55, 255, 1)',
+                    borderWidth: 1
                 },
                 {
                     label: 'Atrasados',

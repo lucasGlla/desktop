@@ -56,6 +56,9 @@ if(!empty($_GET['id'])){
             <br>
             <input type="radio" id="fechado" name="estado" value="fechado" <?php echo ($estado == 'fechado') ? 'checked' : '' ?> required>
             <label for="fechado">Fechado</label>
+            <br>
+            <input type="radio" id="concluido" name="estado" value="concluido" <?php echo ($estado == 'concluido') ? 'checked' : '' ?> required>
+            <label for="fechado">Concluido</label>
             <br><br>
             <p>Prioridade:</p>
             <input type="radio" id="baixa" name="prioridade" value="baixa" <?php echo ($prioridade == 'baixa') ? 'checked' : '' ?> required>
@@ -69,7 +72,7 @@ if(!empty($_GET['id'])){
             <br><br>
             <br><br>
             <label for="data_entrega"><b>Data e hora de entrega:</b></label>
-            <input type="date" name="data_entrega" id="data_entrega" class="inputUser" min="<?php echo date('Y-m-d'); ?>" value="<?php echo $data_entrega;?>" required>
+            <input type="date" name="data_entrega" id="data_entrega" class="inputUser" min="<?php echo date('Y-m-d'); ?>" value="<?php echo $data_entrega;?>">
             <br><br><br>
             <input type="hidden" name="id" value="<?php echo $id ?>">
             <input type="submit" name="update" id="update">

@@ -43,7 +43,6 @@ if (isset($_POST['submit'])) {
 }
 
 // Evita XSS ao exibir o email do usuário
-$nivel_acesso = $_SESSION['nivel_acesso'];
 $logado = htmlspecialchars($_SESSION['email'], ENT_QUOTES, 'UTF-8');
 
 ?>

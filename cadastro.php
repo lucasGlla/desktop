@@ -4,9 +4,10 @@ if(isset($_POST['submit'])){
 
     include_once('./config/conexao.php');
 
+    $id = filter_input(INPUT_POST,'id',FILTER_VALIDATE_INT);
     $nome = filter_input(INPUT_POST, 'nome', FILTER_SANITIZE_STRING);
     $email = filter_input(INPUT_POST, 'email', FILTER_SANITIZE_EMAIL);
-    $senha = password_hash($_POST['senha'], PASSWORD_DEFAULT);
+    $senha = $_POST['senha'];
     $setor = filter_input(INPUT_POST, 'setor', FILTER_SANITIZE_STRING);
     $nivel_acesso = filter_input(INPUT_POST, 'nivel_acesso', FILTER_SANITIZE_STRING);
 
@@ -45,6 +46,10 @@ if(isset($_POST['submit'])){
             
             <br>
             <div class="inputBox">
+                <input placeholder="Matricula" type="text" name="id" id="id" class="inputUser" required>
+            </div>
+            <br><br>
+            <div class="inputBox">
                 <input placeholder="Nome completo" type="text" name="nome" id="nome" class="inputUser" required>
             </div>
             <br><br>
@@ -75,13 +80,15 @@ if(isset($_POST['submit'])){
             </div>
             <p>Nivel de acesso:</p>
                     <label>
+                        <input type="radio" id="administrador_geral" name="nivel_acesso" value="administrador_geral" required> Administrador geral
+                    </label>
+                    <br>
+                    <label>
                         <input type="radio" id="administrador" name="nivel_acesso" value="administrador" required> Administrador
                     </label>
+                    <br>
                     <label>
-                        <input type="radio" id="funcionario" name="nivel_acesso" value="funcionario" required> Funcionario
-                    </label>
-                    <label>
-                        <input type="radio" id="cliente" name="nivel_acesso" value="cliente" required> Cliente
+                        <input type="radio" id="usuario" name="nivel_acesso" value="usuario" required> Usuario
                     </label>
             <br><br>
             <input type="submit" name="submit" id="submit">
