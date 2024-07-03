@@ -1,26 +1,35 @@
-<?php 
+<?php
+session_start();
 
-    session_start();
-    if(isset($_POST['submit']) && !empty($_POST['email']) && !empty($_POST['senha'])){
-        include_once('../config/conexao.php');
-
-        $email = $_POST['email'];
-        $senha = $_POST['senha'];
-
-        $sql = "SELECT * FROM usuario WHERE email = '$email' and senha = '$senha'";
-
-        $result = $conexao->query($sql);
-
-        if(mysqli_num_rows($result) < 1){
-            unset($_SESSION['email']);
-            unset($_SESSION['senha']);
-            header('Location: ../login.php');
-        } else{
+if (isset($_POST['submit']) && !empty($_POST['email']) && !empty($_POST['senha'])) {
+    include_once('../config/conexao.php');
+    
+    $email = filter_input(INPUT_POST, 'email', FILTER_SANITIZE_EMAIL);
+    $senha = $_POST['senha'];
+    
+    $stmt = $conexao->prepare('SELECT senha FROM usuario WHERE email = ?');
+    $stmt->bind_param('s', $email);
+    $stmt->execute();
+    $stmt->bind_result($senhaHash);
+    $stmt->fetch();
+    
+    if ($senhaHash) {
+        if (password_verify($senha, $senhaHash)) {
             $_SESSION['email'] = $email;
-            $_SESSION['senha'] = $senha;
-            header("Location: ../index.php");
+            header('Location: ../index.php');
+            exit();
+        } else {
+            header('Location: ../login.php?error=invalid_password');
+            exit();
         }
-    }else{
-        header('Location: ../login.php');
+    } else {
+        header('Location: ../login.php?error=email_not_found');
+        exit();
     }
+    
+    $stmt->close();
+} else {
+    header('Location: ../login.php?error=empty_fields');
+    exit();
+}
 ?>

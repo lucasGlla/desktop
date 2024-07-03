@@ -1,136 +1,136 @@
 <?php
-session_start();
-include_once('./config/conexao.php');
+    session_start();
+    include_once('./config/conexao.php');
 
-if ((!isset($_SESSION['email'])) && (!isset($_SESSION['senha']))) {
-    unset($_SESSION['email']);
-    unset($_SESSION['senha']);
-    header('Location: login.php');
-}
-$logado = $_SESSION['email'];
+    if ((!isset($_SESSION['email'])) && (!isset($_SESSION['senha']))) {
+        unset($_SESSION['email']);
+        unset($_SESSION['senha']);
+        header('Location: login.php');
+    }
+    $logado = $_SESSION['email'];
 
 
-// Obter o nível de acesso do usuário logado
-$stmt = $conexao->prepare("SELECT id, nivel_acesso FROM usuario WHERE email = ?");
-$stmt->bind_param('s', $_SESSION['email']);
-$stmt->execute();
-$result = $stmt->get_result();
-$user = $result->fetch_assoc();
-$nivel_acesso = $user['nivel_acesso'];
+    // Obter o nível de acesso do usuário logado
+    $stmt = $conexao->prepare("SELECT id, nivel_acesso FROM usuario WHERE email = ?");
+    $stmt->bind_param('s', $_SESSION['email']);
+    $stmt->execute();
+    $result = $stmt->get_result();
+    $user = $result->fetch_assoc();
+    $nivel_acesso = $user['nivel_acesso'];
 
-// Consulta por Ano
-$sqlAno = "SELECT YEAR(data_criacao) AS ano,
-SUM(CASE WHEN estado = 'aberto' THEN 1 ELSE 0 END) AS abertos,
-SUM(CASE WHEN estado = 'fechado' THEN 1 ELSE 0 END) AS fechados,
-SUM(CASE WHEN estado = 'concluido' THEN 1 ELSE 0 END) AS concluidos,
-SUM(CASE WHEN estado = 'aberto' AND data_entrega < CURDATE() THEN 1 ELSE 0 END) AS atrasados
-FROM tickets 
-GROUP BY YEAR(data_criacao)
-ORDER BY ano";
-
-$resultAno = $conexao->query($sqlAno);
-
-$labelsAno = [];
-$abertosAno = [];
-$fechadosAno = [];
-$concluidosAno = [];
-$atrasadosAno = [];
-
-while($row = mysqli_fetch_assoc($resultAno)){
-$labelsAno[] = $row['ano'];
-$abertosAno[] = $row['abertos'];
-$fechadosAno[] = $row['fechados'];
-$concluidosAno[] = $row['concluidos'];
-$atrasadosAno[] = $row['atrasados'];
-}
-
-$anoAtual = date('Y');
-$mesAtual = date('m');
-
-$sqlMes = "SELECT DATE_FORMAT(data_criacao, '%Y-%m') AS mes,
+    // Consulta por Ano
+    $sqlAno = "SELECT YEAR(data_criacao) AS ano,
     SUM(CASE WHEN estado = 'aberto' THEN 1 ELSE 0 END) AS abertos,
     SUM(CASE WHEN estado = 'fechado' THEN 1 ELSE 0 END) AS fechados,
     SUM(CASE WHEN estado = 'concluido' THEN 1 ELSE 0 END) AS concluidos,
     SUM(CASE WHEN estado = 'aberto' AND data_entrega < CURDATE() THEN 1 ELSE 0 END) AS atrasados
     FROM tickets 
-    WHERE YEAR(data_criacao) = $anoAtual
-    GROUP BY YEAR(data_criacao), MONTH(data_criacao)
-    ORDER BY mes";
+    GROUP BY YEAR(data_criacao)
+    ORDER BY ano";
 
-$resultMes = $conexao->query($sqlMes);
+    $resultAno = $conexao->query($sqlAno);
 
-$labelsMes = [];
-$abertosMes = [];
-$fechadosMes = [];
-$concluidosMes = [];
-$atrasadosMes = [];
+    $labelsAno = [];
+    $abertosAno = [];
+    $fechadosAno = [];
+    $concluidosAno = [];
+    $atrasadosAno = [];
 
-while($rowMes = mysqli_fetch_assoc($resultMes)){
-$labelsMes[] = $rowMes['mes'];
-$abertosMes[] = $rowMes['abertos'];
-$fechadosMes[] = $rowMes['fechados'];
-$concluidosMes[] = $rowMes['concluidos'];
-$atrasadosMes[] = $rowMes['atrasados'];
-}
+    while($row = mysqli_fetch_assoc($resultAno)){
+    $labelsAno[] = $row['ano'];
+    $abertosAno[] = $row['abertos'];
+    $fechadosAno[] = $row['fechados'];
+    $concluidosAno[] = $row['concluidos'];
+    $atrasadosAno[] = $row['atrasados'];
+    }
 
-$sqlSemana = "SELECT YEAR(data_criacao) AS ano,
-WEEK(data_criacao) AS semana,
-SUM(CASE WHEN estado = 'aberto' THEN 1 ELSE 0 END) AS abertos,
-SUM(CASE WHEN estado = 'fechado' THEN 1 ELSE 0 END) AS fechados,
-SUM(CASE WHEN estado = 'concluido' THEN 1 ELSE 0 END) AS concluidos,
-SUM(CASE WHEN estado = 'aberto' AND data_entrega < CURDATE() THEN 1 ELSE 0 END) AS atrasados
-FROM tickets 
-WHERE YEAR(data_criacao) = $anoAtual AND MONTH(data_criacao) = $mesAtual
-GROUP BY YEAR(data_criacao), WEEK(data_criacao)
-ORDER BY ano, semana;";
+    $anoAtual = date('Y');
+    $mesAtual = date('m');
 
-$resultSemana = $conexao->query($sqlSemana);
+    $sqlMes = "SELECT DATE_FORMAT(data_criacao, '%Y-%m') AS mes,
+        SUM(CASE WHEN estado = 'aberto' THEN 1 ELSE 0 END) AS abertos,
+        SUM(CASE WHEN estado = 'fechado' THEN 1 ELSE 0 END) AS fechados,
+        SUM(CASE WHEN estado = 'concluido' THEN 1 ELSE 0 END) AS concluidos,
+        SUM(CASE WHEN estado = 'aberto' AND data_entrega < CURDATE() THEN 1 ELSE 0 END) AS atrasados
+        FROM tickets 
+        WHERE YEAR(data_criacao) = $anoAtual
+        GROUP BY YEAR(data_criacao), MONTH(data_criacao)
+        ORDER BY mes";
 
-$labelsSemana = [];
-$abertosSemana = [];
-$fechadosSemana = [];
-$atrasadosSemana = [];
-$concluidosSemana = [];
+    $resultMes = $conexao->query($sqlMes);
 
-while ($row = mysqli_fetch_assoc($resultSemana)) {
-$labelsSemana[] = "Semana " . $row['semana'] . " - " . $row['ano'];
-$abertosSemana[] = $row['abertos'];
-$fechadosSemana[] = $row['fechados'];
-$concluidosSemana[] = $row['concluidos'];
-$atrasadosSemana[] = $row['atrasados'];
-}
+    $labelsMes = [];
+    $abertosMes = [];
+    $fechadosMes = [];
+    $concluidosMes = [];
+    $atrasadosMes = [];
+
+    while($rowMes = mysqli_fetch_assoc($resultMes)){
+    $labelsMes[] = $rowMes['mes'];
+    $abertosMes[] = $rowMes['abertos'];
+    $fechadosMes[] = $rowMes['fechados'];
+    $concluidosMes[] = $rowMes['concluidos'];
+    $atrasadosMes[] = $rowMes['atrasados'];
+    }
+
+    $sqlSemana = "SELECT YEAR(data_criacao) AS ano,
+    WEEK(data_criacao) AS semana,
+    SUM(CASE WHEN estado = 'aberto' THEN 1 ELSE 0 END) AS abertos,
+    SUM(CASE WHEN estado = 'fechado' THEN 1 ELSE 0 END) AS fechados,
+    SUM(CASE WHEN estado = 'concluido' THEN 1 ELSE 0 END) AS concluidos,
+    SUM(CASE WHEN estado = 'aberto' AND data_entrega < CURDATE() THEN 1 ELSE 0 END) AS atrasados
+    FROM tickets 
+    WHERE YEAR(data_criacao) = $anoAtual AND MONTH(data_criacao) = $mesAtual
+    GROUP BY YEAR(data_criacao), WEEK(data_criacao)
+    ORDER BY ano, semana;";
+
+    $resultSemana = $conexao->query($sqlSemana);
+
+    $labelsSemana = [];
+    $abertosSemana = [];
+    $fechadosSemana = [];
+    $atrasadosSemana = [];
+    $concluidosSemana = [];
+
+    while ($row = mysqli_fetch_assoc($resultSemana)) {
+    $labelsSemana[] = "Semana " . $row['semana'] . " - " . $row['ano'];
+    $abertosSemana[] = $row['abertos'];
+    $fechadosSemana[] = $row['fechados'];
+    $concluidosSemana[] = $row['concluidos'];
+    $atrasadosSemana[] = $row['atrasados'];
+    }
 
 
-// Paginação e Consulta Geral
-$pagina = 1;
-if (isset($_GET['pagina'])) {
-    $pagina = filter_input(INPUT_GET, "pagina", FILTER_VALIDATE_INT);
-}
-if (!$pagina) {
+    // Paginação e Consulta Geral
     $pagina = 1;
-}
-$limite = 8;
-$inicio = ($pagina * $limite) - $limite;
+    if (isset($_GET['pagina'])) {
+        $pagina = filter_input(INPUT_GET, "pagina", FILTER_VALIDATE_INT);
+    }
+    if (!$pagina) {
+        $pagina = 1;
+    }
+    $limite = 8;
+    $inicio = ($pagina * $limite) - $limite;
 
-$sql = "SELECT * FROM tickets ORDER BY id DESC LIMIT ?, ?";
-$stmt = $conexao->prepare($sql);
-if (!$stmt) {
-    die("Erro na preparação da consulta: " . $conexao->error);
-}
-$stmt->bind_param("ii", $inicio, $limite);
-$stmt->execute();
-$result = $stmt->get_result();
-if (!$result) {
-    die("Erro na execução da consulta: " . $conexao->error);
-}
+    $sql = "SELECT * FROM tickets ORDER BY id DESC LIMIT ?, ?";
+    $stmt = $conexao->prepare($sql);
+    if (!$stmt) {
+        die("Erro na preparação da consulta: " . $conexao->error);
+    }
+    $stmt->bind_param("ii", $inicio, $limite);
+    $stmt->execute();
+    $result = $stmt->get_result();
+    if (!$result) {
+        die("Erro na execução da consulta: " . $conexao->error);
+    }
 
-$registros = "SELECT COUNT(id) as count FROM tickets";
-$resultRegistros = $conexao->query($registros);
-if (!$resultRegistros) {
-    die("Erro na contagem de registros: " . $conexao->error);
-}
-$totalRegistros = $resultRegistros->fetch_assoc()['count'];
-$paginas = ceil($totalRegistros / $limite);
+    $registros = "SELECT COUNT(id) as count FROM tickets";
+    $resultRegistros = $conexao->query($registros);
+    if (!$resultRegistros) {
+        die("Erro na contagem de registros: " . $conexao->error);
+    }
+    $totalRegistros = $resultRegistros->fetch_assoc()['count'];
+    $paginas = ceil($totalRegistros / $limite);
 ?>
 
 <!DOCTYPE html>

@@ -1,83 +1,73 @@
 <?php
-session_start();
-include_once('./config/conexao.php');
+    session_start();
+    include_once('./config/conexao.php');
 
-function redirectToLogin() {
-    header('Location: login.php');
-    exit;
-}
+    if((!isset($_SESSION['email']) == true) and (!isset($_SESSION['senha']) == true)){
+        unset($_SESSION['email']);
+        unset($_SESSION['senha']);
+        header('Location: login.php');
+    }
+    $logado = $_SESSION['email'];
 
-function isLoggedIn() {
-    return isset($_SESSION['email']) && isset($_SESSION['senha']);
-}
+    // Obter o nível de acesso do usuário logado
+    $stmt = $conexao->prepare("SELECT id, nivel_acesso FROM usuario WHERE email = ?");
+    $stmt->bind_param('s', $_SESSION['email']);
+    $stmt->execute();
+    $result = $stmt->get_result();
+    $user = $result->fetch_assoc();
+    $nivel_acesso = $user['nivel_acesso'];
+    $logged_in_user_id = $user['id'];
 
-if (!isLoggedIn()) {
-    unset($_SESSION['email']);
-    unset($_SESSION['senha']);
-    redirectToLogin();
-}
+    $pagina = filter_input(INPUT_GET, 'pagina', FILTER_VALIDATE_INT);
+    if (!$pagina) {
+        $pagina = 1;
+    }
+    $limite = 10;
+    $inicio = ($pagina - 1) * $limite;
 
-$logado = htmlspecialchars($_SESSION['email'], ENT_QUOTES, 'UTF-8');
+    if (!empty($_GET['search'])) {
+        $data = '%' . filter_input(INPUT_GET, 'search', FILTER_SANITIZE_STRING) . '%';
+        $sql = "
+        SELECT u.id, u.nome, u.email, u.setor, u.nivel_acesso, COUNT(t.id) AS chamados
+        FROM usuario u
+        LEFT JOIN tickets t ON u.email = t.email_usuario
+        WHERE u.id LIKE ? OR u.nome LIKE ? OR u.email LIKE ? OR u.setor LIKE ? OR u.nivel_acesso LIKE ?
+        GROUP BY u.id, u.nome, u.email, u.setor, u.nivel_acesso
+        ORDER BY u.id DESC
+        LIMIT ? OFFSET ?";
+        $stmt = $conexao->prepare($sql);
+        $stmt->bind_param('ssssssi', $data, $data, $data, $data, $data, $limite, $inicio);
+    } else {
+        $sql = "
+        SELECT u.id, u.nome, u.email, u.setor, u.nivel_acesso, COUNT(t.id) AS chamados
+        FROM usuario u
+        LEFT JOIN tickets t ON u.email = t.email_usuario
+        GROUP BY u.id, u.nome, u.email, u.setor, u.nivel_acesso
+        ORDER BY u.id DESC
+        LIMIT ? OFFSET ?";
+        $stmt = $conexao->prepare($sql);
+        $stmt->bind_param('ii', $limite, $inicio);
+    }
 
-// Obter o nível de acesso do usuário logado
-$stmt = $conexao->prepare("SELECT id, nivel_acesso FROM usuario WHERE email = ?");
-$stmt->bind_param('s', $_SESSION['email']);
-$stmt->execute();
-$result = $stmt->get_result();
-$user = $result->fetch_assoc();
-$nivel_acesso = $user['nivel_acesso'];
-$logged_in_user_id = $user['id'];
+    if (!$stmt) {
+        die("Erro na preparação da consulta: " . $conexao->error);
+    }
 
-$pagina = filter_input(INPUT_GET, 'pagina', FILTER_VALIDATE_INT);
-if (!$pagina) {
-    $pagina = 1;
-}
-$limite = 10;
-$inicio = ($pagina - 1) * $limite;
+    $stmt->execute();
+    $result = $stmt->get_result();
+    if (!$result) {
+        die("Erro na execução da consulta: " . $conexao->error);
+    }
 
-if (!empty($_GET['search'])) {
-    $data = '%' . filter_input(INPUT_GET, 'search', FILTER_SANITIZE_STRING) . '%';
-    $sql = "
-    SELECT u.id, u.nome, u.email, u.setor, u.nivel_acesso, COUNT(t.id) AS chamados
-    FROM usuario u
-    LEFT JOIN tickets t ON u.email = t.email_usuario
-    WHERE u.id LIKE ? OR u.nome LIKE ? OR u.email LIKE ? OR u.setor LIKE ? OR u.nivel_acesso LIKE ?
-    GROUP BY u.id, u.nome, u.email, u.setor, u.nivel_acesso
-    ORDER BY u.id DESC
-    LIMIT ? OFFSET ?";
-    $stmt = $conexao->prepare($sql);
-    $stmt->bind_param('ssssssi', $data, $data, $data, $data, $data, $limite, $inicio);
-} else {
-    $sql = "
-    SELECT u.id, u.nome, u.email, u.setor, u.nivel_acesso, COUNT(t.id) AS chamados
-    FROM usuario u
-    LEFT JOIN tickets t ON u.email = t.email_usuario
-    GROUP BY u.id, u.nome, u.email, u.setor, u.nivel_acesso
-    ORDER BY u.id DESC
-    LIMIT ? OFFSET ?";
-    $stmt = $conexao->prepare($sql);
-    $stmt->bind_param('ii', $limite, $inicio);
-}
-
-if (!$stmt) {
-    die("Erro na preparação da consulta: " . $conexao->error);
-}
-
-$stmt->execute();
-$result = $stmt->get_result();
-if (!$result) {
-    die("Erro na execução da consulta: " . $conexao->error);
-}
-
-$sqlCount = "SELECT COUNT(*) as total FROM usuario";
-$stmtCount = $conexao->prepare($sqlCount);
-$stmtCount->execute();
-$resultRegistros = $stmtCount->get_result();
-if (!$resultRegistros) {
-    die("Erro na contagem de registros: " . $conexao->error);
-}
-$totalRegistros = $resultRegistros->fetch_assoc()['total'];
-$paginas = ceil($totalRegistros / $limite);
+    $sqlCount = "SELECT COUNT(*) as total FROM usuario";
+    $stmtCount = $conexao->prepare($sqlCount);
+    $stmtCount->execute();
+    $resultRegistros = $stmtCount->get_result();
+    if (!$resultRegistros) {
+        die("Erro na contagem de registros: " . $conexao->error);
+    }
+    $totalRegistros = $resultRegistros->fetch_assoc()['total'];
+    $paginas = ceil($totalRegistros / $limite);
 ?>
 
 <!DOCTYPE html>

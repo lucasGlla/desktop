@@ -8,6 +8,7 @@ if (isset($_POST['submit'])) {
     $senha = $_POST['senha'];
     $setor = filter_input(INPUT_POST, 'setor', FILTER_SANITIZE_STRING);
     $nivel_acesso = filter_input(INPUT_POST, 'nivel_acesso', FILTER_SANITIZE_STRING);
+    $senhaHash = password_hash($senha,PASSWORD_DEFAULT);
 
     $stmt = $conexao->prepare("SELECT id FROM usuario WHERE id = ?");
     $stmt->bind_param("i", $id);
@@ -34,7 +35,7 @@ if (isset($_POST['submit'])) {
     $stmt->close();
 
     $stmt = $conexao->prepare("INSERT INTO usuario (id, nome, email, senha, setor, nivel_acesso) VALUES (?, ?, ?, ?, ?, ?)");
-    $stmt->bind_param("isssss", $id, $nome, $email, $senha, $setor, $nivel_acesso);
+    $stmt->bind_param("isssss", $id, $nome, $email, $senhaHash, $setor, $nivel_acesso);
     $stmt->execute();
 
     if ($stmt->affected_rows > 0) {

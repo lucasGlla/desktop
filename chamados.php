@@ -1,56 +1,55 @@
 <?php
-session_start();
-include_once('./config/conexao.php');
+    session_start();
+    include_once('./config/conexao.php');
 
-// Verifica se o usuário está logado
-if (!isset($_SESSION['email']) || !isset($_SESSION['senha'])) {
-    header('Location: login.php');
-    exit;
-}
-
-$stmt = $conexao->prepare("SELECT id, nivel_acesso FROM usuario WHERE email = ?");
-$stmt->bind_param('s', $_SESSION['email']);
-$stmt->execute();
-$result = $stmt->get_result();
-$user = $result->fetch_assoc();
-$nivel_acesso = $user['nivel_acesso'];
-
-// Gera e verifica o token CSRF
-if (!isset($_SESSION['csrf_token'])) {
-    $_SESSION['csrf_token'] = bin2hex(random_bytes(32));
-}
-
-if (isset($_POST['submit'])) {
-    // Verifica se todos os campos obrigatórios estão preenchidos e se o token CSRF é válido
-    if (empty($_POST['titulo']) || empty($_POST['descricao']) || empty($_POST['prioridade']) || empty($_POST['local']) || empty($_POST['data_entrega']) || $_POST['csrf_token'] !== $_SESSION['csrf_token']) {
-        $_SESSION['message'] = "Todos os campos são obrigatórios ou o token CSRF é inválido.";
-    } else {
-        // Obtém e sanitiza os dados do formulário
-        $titulo = htmlspecialchars($_POST['titulo'], ENT_QUOTES, 'UTF-8');
-        $descricao = htmlspecialchars($_POST['descricao'], ENT_QUOTES, 'UTF-8');
-        $prioridade = htmlspecialchars($_POST['prioridade'], ENT_QUOTES, 'UTF-8');
-        $local = htmlspecialchars($_POST['local'], ENT_QUOTES, 'UTF-8');
-        $email_usuario = $_SESSION['email'];
-        $data_entrega = $_POST['data_entrega'];
-
-        // Prepara e executa a inserção dos dados no banco de dados
-        $stmt = $conexao->prepare("INSERT INTO tickets (titulo, descricao, prioridade, local, email_usuario, data_entrega) VALUES (?, ?, ?, ?, ?, ?)");
-        $stmt->bind_param("ssssss", $titulo, $descricao, $prioridade, $local, $email_usuario, $data_entrega);
-
-        if ($stmt->execute()) {
-            $_SESSION['message'] = "Operação concluida!";
-        } else {
-            $_SESSION['message'] = "Erro ao inserir dados.";
-        }
-
-        $stmt->close();
-        header('Location: chamados.php');
-        exit;
+    if((!isset($_SESSION['email']) == true) and (!isset($_SESSION['senha']) == true)){
+        unset($_SESSION['email']);
+        unset($_SESSION['senha']);
+        header('Location: login.php');
     }
-}
+    $logado = $_SESSION['email'];
 
-// Evita XSS ao exibir o email do usuário
-$logado = htmlspecialchars($_SESSION['email'], ENT_QUOTES, 'UTF-8');
+    // Obter o nível de acesso do usuário logado
+    $stmt = $conexao->prepare("SELECT id, nivel_acesso FROM usuario WHERE email = ?");
+    $stmt->bind_param('s', $_SESSION['email']);
+    $stmt->execute();
+    $result = $stmt->get_result();
+    $user = $result->fetch_assoc();
+    $nivel_acesso = $user['nivel_acesso'];
+
+    // Gera e verifica o token CSRF
+    if (!isset($_SESSION['csrf_token'])) {
+        $_SESSION['csrf_token'] = bin2hex(random_bytes(32));
+    }
+
+    if (isset($_POST['submit'])) {
+        // Verifica se todos os campos obrigatórios estão preenchidos e se o token CSRF é válido
+        if (empty($_POST['titulo']) || empty($_POST['descricao']) || empty($_POST['prioridade']) || empty($_POST['local']) || empty($_POST['data_entrega']) || $_POST['csrf_token'] !== $_SESSION['csrf_token']) {
+            $_SESSION['message'] = "Todos os campos são obrigatórios ou o token CSRF é inválido.";
+        } else {
+            // Obtém e sanitiza os dados do formulário
+            $titulo = htmlspecialchars($_POST['titulo'], ENT_QUOTES, 'UTF-8');
+            $descricao = htmlspecialchars($_POST['descricao'], ENT_QUOTES, 'UTF-8');
+            $prioridade = htmlspecialchars($_POST['prioridade'], ENT_QUOTES, 'UTF-8');
+            $local = htmlspecialchars($_POST['local'], ENT_QUOTES, 'UTF-8');
+            $email_usuario = $_SESSION['email'];
+            $data_entrega = $_POST['data_entrega'];
+
+            // Prepara e executa a inserção dos dados no banco de dados
+            $stmt = $conexao->prepare("INSERT INTO tickets (titulo, descricao, prioridade, local, email_usuario, data_entrega) VALUES (?, ?, ?, ?, ?, ?)");
+            $stmt->bind_param("ssssss", $titulo, $descricao, $prioridade, $local, $email_usuario, $data_entrega);
+
+            if ($stmt->execute()) {
+                $_SESSION['message'] = "Operação concluida!";
+            } else {
+                $_SESSION['message'] = "Erro ao inserir dados.";
+            }
+
+            $stmt->close();
+            header('Location: chamados.php');
+            exit;
+        }
+    }
 
 ?>
 

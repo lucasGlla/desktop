@@ -1,6 +1,7 @@
 <?php 
     session_start();
     include_once('./config/conexao.php');
+    
     if((!isset($_SESSION['email']) == true) and (!isset($_SESSION['senha']) == true)){
         unset($_SESSION['email']);
         unset($_SESSION['senha']);
@@ -8,6 +9,7 @@
     }
     $logado = $_SESSION['email'];
 
+    // Obter o nível de acesso do usuário logado
     $stmt = $conexao->prepare("SELECT id, nivel_acesso FROM usuario WHERE email = ?");
     $stmt->bind_param('s', $_SESSION['email']);
     $stmt->execute();
