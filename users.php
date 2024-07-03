@@ -2,7 +2,7 @@
     session_start();
     include_once('./config/conexao.php');
 
-    if((!isset($_SESSION['email']) == true) and (!isset($_SESSION['senha']) == true)){
+    if ((!isset($_SESSION['email'])) && (!isset($_SESSION['senha']))) {
         unset($_SESSION['email']);
         unset($_SESSION['senha']);
         header('Location: login.php');

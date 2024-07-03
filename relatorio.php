@@ -9,7 +9,6 @@
     }
     $logado = $_SESSION['email'];
 
-
     // Obter o nível de acesso do usuário logado
     $stmt = $conexao->prepare("SELECT id, nivel_acesso FROM usuario WHERE email = ?");
     $stmt->bind_param('s', $_SESSION['email']);
